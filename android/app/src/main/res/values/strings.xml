@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">麻将测试</string>
+    <string name="app_title">麻将核心逻辑 · Kotlin</string>
+    <string name="new_game">新局</string>
+    <string name="draw">摸牌</string>
+    <string name="discard">打牌</string>
+    <string name="win">和牌</string>
+    <string name="waits">听牌</string>
+    <string name="draw_game">流局</string>
+    <string name="label_hand">手牌</string>
+    <string name="label_river">牌河</string>
+    <string name="label_state">状态 JSON</string>
+</resources>
