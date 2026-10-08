@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.MahjongTest" parent="@android:style/Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">#FAFAF5</item>
-        <item name="android:colorAccent">#C62828</item>
+    <style name="Theme.MahjongTest" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#0F5132</item>
+        <item name="android:colorAccent">#FFC107</item>
+        <item name="android:statusBarColor">#0A3A24</item>
+        <item name="android:navigationBarColor">#0A3A24</item>
     </style>
 </resources>
