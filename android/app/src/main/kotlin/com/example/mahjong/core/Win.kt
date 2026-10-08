@@ -15,6 +15,7 @@ const val PATTERN_SEVEN_PAIRS: String = "seven_pairs"
 const val PATTERN_THIRTEEN_ORPHANS: String = "thirteen_orphans"
 
 private const val MELD_SIZE = 3
+private const val KONG_SIZE = 4
 private const val HAND_SIZE = 14
 private const val NUMBERED_KINDS = 27
 
@@ -111,22 +112,28 @@ private fun isThirteenOrphans(counts: IntArray): Boolean {
     return pairs == 1
 }
 
-/** 一组副露是否为合法刻子或顺子。 */
+/** 一组副露是否为合法刻子、杠子或顺子（杠子为四张相同的牌）。 */
 fun isValidMeld(codes: List<String>): Boolean {
-    if (codes.size != MELD_SIZE) {
+    if (codes.size != MELD_SIZE && codes.size != KONG_SIZE) {
         return false
     }
     val indexes = try {
-        codes.map { tileIndex(it) }.sorted()
+        codes.map { tileIndex(it) }
     } catch (_: IllegalArgumentException) {
         return false
     }
     if (indexes.toSet().size == 1) {
+        // 刻子（3 张）或杠子（4 张）
         return true
     }
-    val first = indexes[0]
-    val second = indexes[1]
-    val third = indexes[2]
+    if (codes.size != MELD_SIZE) {
+        // 杠子必须四张相同
+        return false
+    }
+    val sorted = indexes.sorted()
+    val first = sorted[0]
+    val second = sorted[1]
+    val third = sorted[2]
     if (first >= NUMBERED_KINDS) {
         // 字牌无顺子
         return false
