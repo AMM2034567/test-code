@@ -16,7 +16,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-      workflows: write  # 👈 确保这行的缩进与上一行完全对齐
+      workflows: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
