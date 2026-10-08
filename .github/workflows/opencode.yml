@@ -1,17 +1,14 @@
 name: opencode
 
 on:
-  issues:
-    types: [opened]          # 当 Issue 被创建时触发
   issue_comment:
-    types: [created]         # 保留原有评论触发，方便后续追问
+    types: [created]
   pull_request_review_comment:
     types: [created]
 
 jobs:
   opencode:
     if: |
-      (github.event_name == 'issues' && github.event.action == 'opened') ||
       contains(github.event.comment.body, '/oc') ||
       contains(github.event.comment.body, '/opencode')
     runs-on: ubuntu-latest
@@ -19,7 +16,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-      workflows: write
+      workflows: write  # 👈 确保这行的缩进与上一行完全对齐
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -38,7 +35,3 @@ jobs:
         with:
           model: opencode/mimo-v2.6-flash-free
           use_github_token: true
-          # 关键：从 Issue 的标题和正文中提取 prompt
-          prompt: |
-            标题：${{ github.event.issue.title }}
-            正文：${{ github.event.issue.body }}
