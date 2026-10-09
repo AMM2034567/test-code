@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -78,32 +81,87 @@ fun MahjongScreen(viewModel: GameViewModel) {
     Column(
         Modifier
             .fillMaxSize()
-            .background(MahjongPalette.felt),
+            .background(MahjongPalette.felt)
+            .windowInsetsPadding(WindowInsets.safeDrawing),
     ) {
         Header(ui)
 
-        Column(
-            Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OpponentPanel(ui, ui.topSeat)
+        MainArea(ui, Modifier.weight(1f))
+
+        MyArea(ui)
+
+        HandSection(ui, selectedIndex, onTileClick)
+        ActionBar(ui, selectedIndex, viewModel)
+    }
+}
+
+// ---------- 主区域 ----------
+
+@Composable
+private fun MainArea(ui: UiState, modifier: Modifier = Modifier) {
+    BoxWithConstraints(
+        modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+    ) {
+        if (maxWidth >= maxHeight) {
+            Row(
+                Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                TableArea(ui, threeAcross = true, Modifier.weight(1.7f))
+                CenterArea(ui, Modifier.weight(1f))
+            }
+        } else {
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                TableArea(ui, threeAcross = false, Modifier.weight(1.5f))
+                CenterArea(ui, Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun TableArea(ui: UiState, threeAcross: Boolean, modifier: Modifier = Modifier) {
+    Column(
+        modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        if (threeAcross) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.Top,
             ) {
                 OpponentPanel(ui, ui.leftSeat, Modifier.weight(1f))
-                CenterInfo(ui, Modifier.weight(1.3f))
+                OpponentPanel(ui, ui.topSeat, Modifier.weight(1f))
                 OpponentPanel(ui, ui.rightSeat, Modifier.weight(1f))
             }
-            MyArea(ui)
+        } else {
+            OpponentPanel(ui, ui.topSeat, Modifier.fillMaxWidth())
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                OpponentPanel(ui, ui.leftSeat, Modifier.weight(1f))
+                OpponentPanel(ui, ui.rightSeat, Modifier.weight(1f))
+            }
         }
-
-        HandSection(ui, selectedIndex, onTileClick)
-        ActionBar(ui, selectedIndex, viewModel)
     }
+}
+
+@Composable
+private fun CenterArea(ui: UiState, modifier: Modifier = Modifier) {
+    CenterInfo(
+        ui,
+        modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
+    )
 }
 
 // ---------- 顶部信息栏 ----------
@@ -329,12 +387,21 @@ private fun ResultCard(ui: UiState) {
 
 @Composable
 private fun MyArea(ui: UiState) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        SectionLabel("副露")
         Row(
+            Modifier
+                .weight(0.45f)
+                .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            SectionLabel("副露")
             if (ui.human.melds.isEmpty()) {
                 Text("无", color = MahjongPalette.textSecondary, fontSize = 11.sp)
             } else {
@@ -353,31 +420,27 @@ private fun MyArea(ui: UiState) {
             }
         }
 
+        SectionLabel("牌河")
         Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            Modifier
+                .weight(1f)
+                .horizontalScroll(rememberScrollState()),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            SectionLabel("牌河")
             if (ui.human.discards.isEmpty()) {
                 Text("无", color = MahjongPalette.textSecondary, fontSize = 11.sp)
             } else {
-                Row(
-                    Modifier
-                        .weight(1f)
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    val marked = ui.lastDiscard?.first == ui.humanSeat &&
-                        ui.human.discards.lastOrNull() == ui.lastDiscard?.second
-                    ui.human.discards.forEachIndexed { index, code ->
-                        MahjongTile(
-                            code,
-                            Modifier
-                                .width(TileSizes.Micro)
-                                .height(TileSizes.MicroHeight),
-                            marked = marked && index == ui.human.discards.lastIndex,
-                        )
-                    }
+                val marked = ui.lastDiscard?.first == ui.humanSeat &&
+                    ui.human.discards.lastOrNull() == ui.lastDiscard?.second
+                ui.human.discards.forEachIndexed { index, code ->
+                    MahjongTile(
+                        code,
+                        Modifier
+                            .width(TileSizes.Micro)
+                            .height(TileSizes.MicroHeight),
+                        marked = marked && index == ui.human.discards.lastIndex,
+                    )
                 }
             }
         }
@@ -540,7 +603,7 @@ private fun claimLabel(option: ClaimType?): String = when (option) {
 /** 按宽度估算一行能放下的牌数。 */
 private fun slotsPerRow(width: Dp, tile: Dp): Int {
     val perRow = ((width.value - 14) / (tile.value + 2)).toInt()
-    return perRow.coerceIn(3, 14)
+    return perRow.coerceIn(1, 14)
 }
 
 /** 一组牌的网格（自动换行）。 */
@@ -576,6 +639,7 @@ private fun TileGrid(
 @Composable
 private fun MeldRow(melds: List<List<String>>) {
     Row(
+        Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
