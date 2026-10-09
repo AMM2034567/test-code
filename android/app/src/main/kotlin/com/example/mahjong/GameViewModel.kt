@@ -25,7 +25,7 @@ class GameViewModel : ViewModel() {
 
     private var epoch = 0
 
-    var uiState: UiState = buildUiState()
+    var uiState: UiState by mutableStateOf(buildUiState())
         private set
 
     /** 当前是否轮到 AI（供界面的节拍循环判断）。 */
